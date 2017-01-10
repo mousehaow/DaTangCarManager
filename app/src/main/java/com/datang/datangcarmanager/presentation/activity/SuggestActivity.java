@@ -38,7 +38,6 @@ public class SuggestActivity extends BaseActivity {
         mSuggestLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                Log.i("touch", "jjjj");
                 mSuggestToolbar.setFocusable(true);
                 mSuggestToolbar.setFocusableInTouchMode(true);
                 mSuggestToolbar.requestFocus();
