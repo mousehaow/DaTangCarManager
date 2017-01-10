@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="colorToolBar">#308be0</color>
+    <color name="transparent">#00000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="white_70">#B3FFFFFF</color>
+    <color name="white_30">#4DFFFFFF</color>
+    <color name="white_12">#1EFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="black_87">#FC000000</color>
+    <color name="black_54">#8D000000</color>
+    <color name="black_26">#42000000</color>
+    <color name="black_12">#1E000000</color>
+    <color name="grey">#FFD8D8D8</color>
+    <color name="grey_light">#EEEEEE</color>
+    <color name="grey_dark">#FF757575</color>
+    <color name="light_blue">#FF03A9F4</color>
+    <color name="light_blue_30">#4D03A9F4</color>
+    <color name="teal">#FF009688</color>
+    <color name="green">#FF4CAF50</color>
+    <color name="light_green">#FF8BC34A</color>
+
+    <color name="home_bar_text_normal">#6a6c6f</color>
+    <color name="home_bar_text_push">#ff5959</color>
+    <color name="textnormal">#adadad</color>
+
+    <color name="btn_bg_pressed_color">#ffacac</color>
+    <color name="btn_bg_color">#ff5959</color>
+
+    <color name="instrument_text_defult_color">@color/grey_dark</color>
+</resources>
