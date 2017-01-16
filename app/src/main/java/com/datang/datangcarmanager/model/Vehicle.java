@@ -34,7 +34,7 @@ public class Vehicle {
     private double longitude;
     private double latitude;
     private int direction;
-    private int speed;
+    private double speed;
     private String posTime;
     private String driverId;
     private String driverName;
@@ -203,11 +203,11 @@ public class Vehicle {
         this.direction = direction;
     }
 
-    public int getSpeed() {
+    public double getSpeed() {
         return speed;
     }
 
-    public void setSpeed(int speed) {
+    public void setSpeed(double speed) {
         this.speed = speed;
     }
 

@@ -306,7 +306,7 @@ public class EnterpriseCarActivity extends BaseActivity implements IEnterpriseCa
             if (clustersMarker.size() == 0) {
                 // 添加一个新的自定义marker
                 clustersMarker.add(new MarkerCluster(
-                        EnterpriseCarActivity.this, options, projection, 150));// 100=相距多少才聚合
+                        EnterpriseCarActivity.this, options, projection, 100));// 100=相距多少才聚合
             } else {
                 boolean isIn = false;
                 for (MarkerCluster cluster : clustersMarker) {
@@ -320,7 +320,7 @@ public class EnterpriseCarActivity extends BaseActivity implements IEnterpriseCa
                 // 如果没在任何范围内，自己单独形成一个自定义marker。在和后面的marker进行比较
                 if (!isIn) {
                     clustersMarker.add(new MarkerCluster(
-                            EnterpriseCarActivity.this, options, projection, 150));// 80=相距多少才聚合
+                            EnterpriseCarActivity.this, options, projection, 100));// 80=相距多少才聚合
                 }
             }
         }

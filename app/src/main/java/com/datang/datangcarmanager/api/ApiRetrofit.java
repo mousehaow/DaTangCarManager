@@ -30,7 +30,9 @@ public class ApiRetrofit {
 
     public CarApi mCarApiService;
 
-    public static final String CAR_BASE_URL = "http://iov.cpsdna.com:19080/";
+    //public static final String CAR_BASE_URL = "http://iov.cpsdna.com:19080/";
+
+    public static final String CAR_BASE_URL = "http://59.110.16.24/";
 
     public CarApi getCarApiService() {
         return mCarApiService;

@@ -31,7 +31,7 @@ import rx.Observable;
  */
 public interface CarApi {
 
-    @POST("saasapi/saasapi")
+    @POST("TinyOBDClient/service/BusinessService")
     Observable<Responce<VehicleList>> getEquipmentCars(@Body PostRequest request);
 
     @POST("saasapi/saasapi")
@@ -43,7 +43,7 @@ public interface CarApi {
     @POST("saasapi/saasapi")
     Observable<Responce<DriveRecord>> getDriveRecordsInfo(@Body PostRequest request);
 
-    @POST("saasapi/saasapi")
+    @POST("TinyOBDClient/service/BusinessService")
     Observable<Responce<ParkingRecordList>> getParkingRecordsInfo(@Body PostRequest request);
 
     @POST("saasapi/saasapi")

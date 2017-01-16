@@ -28,6 +28,13 @@ import com.amap.api.maps2d.model.LatLng;
 import com.amap.api.maps2d.model.LatLngBounds;
 import com.amap.api.maps2d.model.Marker;
 import com.amap.api.maps2d.model.MarkerOptions;
+import com.amap.api.services.core.LatLonPoint;
+import com.amap.api.services.geocoder.GeocodeAddress;
+import com.amap.api.services.geocoder.GeocodeResult;
+import com.amap.api.services.geocoder.GeocodeSearch;
+import com.amap.api.services.geocoder.RegeocodeAddress;
+import com.amap.api.services.geocoder.RegeocodeQuery;
+import com.amap.api.services.geocoder.RegeocodeResult;
 import com.datang.datangcarmanager.R;
 import com.datang.datangcarmanager.model.CarInfo;
 import com.datang.datangcarmanager.model.ParkingRecordList;
@@ -55,7 +62,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
-public class ParkingRecordFragment extends Fragment implements IParkingRecordView, AMap.OnCameraChangeListener {
+public class ParkingRecordFragment extends Fragment implements IParkingRecordView, AMap.OnCameraChangeListener, GeocodeSearch.OnGeocodeSearchListener{
 
     public static final String DIALOG_TAG = "CALDROID_DIALOG_ParkingRecordFragment";
 
@@ -97,6 +104,9 @@ public class ParkingRecordFragment extends Fragment implements IParkingRecordVie
 
     private SweetAlertDialog mDialog;
 
+    private GeocodeSearch geocodeSearch;
+    private int geocodeSearchNum = 0;
+
     /**
      * 所有的marker
      */
@@ -133,6 +143,16 @@ public class ParkingRecordFragment extends Fragment implements IParkingRecordVie
         if (aMap == null) {
             aMap = mParkingRecordMap.getMap();
         }
+        currentZoom = 18f;
+        CameraUpdate update = CameraUpdateFactory.newCameraPosition(new CameraPosition(
+                new LatLng(mCarInfo.getLatitude(), mCarInfo.getLongitude()),
+                currentZoom,
+                0,
+                0
+        ));
+        aMap.moveCamera(update);
+        geocodeSearch = new GeocodeSearch(this.getActivity());
+        geocodeSearch.setOnGeocodeSearchListener(this);
         mPresenter = new ParkingRecordPresenter(this.getContext());
         calendar = new GregorianCalendar();
         selectedDate = new Date();
@@ -304,15 +324,21 @@ public class ParkingRecordFragment extends Fragment implements IParkingRecordVie
 
     @Override
     public void getParkingRecordsInfoSuccess(Responce<ParkingRecordList> responce) {
-        records = responce.getDetail().getDataList();
-        if (mDialog != null && mDialog.isShowing()) {
-            mDialog.dismiss();
-        }
-        if (records.size() != 0) {
-            initData();
-        } else {
+        if (responce.getTotalRecordNum() == 0) {
+            if (mDialog != null && mDialog.isShowing()) {
+                mDialog.dismiss();
+            }
             aMap.clear();
             MyToast.showToastShort("此时间段内没有停车记录。");
+        } else {
+            records = responce.getDetail().getDataList();
+            geocodeSearchNum = 0;
+            for(ParkingRecordList.ParkingRecordBean record : records) {
+                RegeocodeQuery query = new RegeocodeQuery(new LatLonPoint(record.getLatitude(), record.getLongitude()),
+                        200, GeocodeSearch.AMAP);
+                geocodeSearch.getFromLocationAsyn(query);
+                Log.i("Start", "Get ++++++++++++++++++++++++++++++++");
+            }
         }
     }
 
@@ -324,7 +350,7 @@ public class ParkingRecordFragment extends Fragment implements IParkingRecordVie
             options.position(lng)
                     .anchor(.5f, .5f)
                     .title(record.getEndLocation())
-                    .snippet(record.getBeginTime() + " ~ " + record.getEndTime())
+                    .snippet(record.getEndTime() == null ? record.getHour() : record.getBeginTime() + "~" + record.getEndTime())
                     .icon(BitmapDescriptorFactory
                     .fromBitmap(BitmapFactory
                             .decodeResource(getResources(),
@@ -359,49 +385,38 @@ public class ParkingRecordFragment extends Fragment implements IParkingRecordVie
             }
             double centerLatitude = (maxLatitude + minLatitude) / 2;
             double centerLongitude = (maxLongitude + minLongitude) / 2;
-//            currentZoom = 19f;
-//            CameraUpdate update = CameraUpdateFactory.newCameraPosition(new CameraPosition(
-//                    new LatLng(centerLatitude, centerLongitude),
-//                    currentZoom,
-//                    0,
-//                    0
-//            ));
-            LatLngBounds bounds = null;
-            try {
-                bounds = new LatLngBounds(new LatLng(minLatitude, minLongitude),
-                        new LatLng(maxLatitude, maxLongitude));
-            } catch (AMapException e) {
-                e.printStackTrace();
-            }
-            if (bounds != null) {
-                CameraUpdate uuu = CameraUpdateFactory.newLatLngBounds(bounds,
-                        ScreenUtils.getScreenWidth(this.getActivity()),
-                        ScreenUtils.getScreenHeight(this.getActivity()), 24);
-                aMap.moveCamera(uuu);
-            }
+            currentZoom = 19f;
+            CameraUpdate update = CameraUpdateFactory.newCameraPosition(new CameraPosition(
+                    new LatLng(centerLatitude, centerLongitude),
+                    currentZoom,
+                    0,
+                    0
+            ));
+            aMap.moveCamera(update);
+
             markerOptionsListInView.addAll(markerOptionsListShouldShow);
-//            while (markerOptionsListShouldShow.size() != markerOptionsListInView.size()) {
-//                Projection projection = aMap.getProjection();
-//                Point point = null;
-//                markerOptionsListInView.clear();
-//                for (MarkerOptions options : markerOptionsListShouldShow) {
-//                    point = projection.toScreenLocation(options.getPosition());
-//                    if (point.x < 0 || point.y < 0 || point.x > screenWidth || point.y > screenHeight) {
-//
-//                    } else {
-//                        markerOptionsListInView.add(options);
-//                    }
-//                }
-//                if (markerOptionsListall.size() != markerOptionsListInView.size()) {
-//                    CameraUpdate newUpdate = CameraUpdateFactory.newCameraPosition(new CameraPosition(
-//                            new LatLng(centerLatitude, centerLongitude),
-//                            currentZoom--,
-//                            0,
-//                            0
-//                    ));
-//                    aMap.moveCamera(newUpdate);
-//                }
-//            }
+            while (markerOptionsListShouldShow.size() != markerOptionsListInView.size()) {
+                Projection projection = aMap.getProjection();
+                Point point = null;
+                markerOptionsListInView.clear();
+                for (MarkerOptions options : markerOptionsListShouldShow) {
+                    point = projection.toScreenLocation(options.getPosition());
+                    if (point.x < 0 || point.y < 0 || point.x > screenWidth || point.y > screenHeight) {
+
+                    } else {
+                        markerOptionsListInView.add(options);
+                    }
+                }
+                if (markerOptionsListall.size() != markerOptionsListInView.size()) {
+                    CameraUpdate newUpdate = CameraUpdateFactory.newCameraPosition(new CameraPosition(
+                            new LatLng(centerLatitude, centerLongitude),
+                            currentZoom--,
+                            0,
+                            0
+                    ));
+                    aMap.moveCamera(newUpdate);
+                }
+            }
             showMarks();
         } else {
             aMap.clear();
@@ -443,5 +458,26 @@ public class ParkingRecordFragment extends Fragment implements IParkingRecordVie
                 showMarks();
             }
         }
+    }
+
+    @Override
+    public void onRegeocodeSearched(RegeocodeResult regeocodeResult, int i) {
+        if (i == 1000) {
+            geocodeSearchNum++;
+            RegeocodeAddress address = regeocodeResult.getRegeocodeAddress();
+            String location = address.getProvince() + address.getCity() + address.getDistrict();
+            records.get(geocodeSearchNum - 1).setEndLocation(location);
+            if (geocodeSearchNum == records.size()) {
+                if (mDialog != null && mDialog.isShowing()) {
+                    mDialog.dismiss();
+                }
+                initData();
+            }
+        }
+    }
+
+    @Override
+    public void onGeocodeSearched(GeocodeResult geocodeResult, int i) {
+
     }
 }

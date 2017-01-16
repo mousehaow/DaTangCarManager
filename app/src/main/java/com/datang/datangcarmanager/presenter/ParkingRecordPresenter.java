@@ -1,6 +1,8 @@
 package com.datang.datangcarmanager.presenter;
 
 import android.content.Context;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.datang.datangcarmanager.api.ApiFactory;
 import com.datang.datangcarmanager.api.CarApi;
@@ -10,6 +12,7 @@ import com.datang.datangcarmanager.model.request.DriveRecordParams;
 import com.datang.datangcarmanager.model.request.ParkingRecordParams;
 import com.datang.datangcarmanager.model.request.PostRequest;
 import com.datang.datangcarmanager.view.IParkingRecordView;
+import com.google.gson.Gson;
 
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -56,11 +59,13 @@ public class ParkingRecordPresenter {
     }
 
     private void showInfo(IParkingRecordView view, Responce<ParkingRecordList> responce, Context context) {
+        Gson gson = new Gson();
+        Log.i("Tag++++++", gson.toJson(responce));
         view.getParkingRecordsInfoSuccess(responce);
     }
 
     private void loadError(Throwable throwable) {
         throwable.printStackTrace();
-        //Toast.makeText(mContext, "网络不见了", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mContext, "网络不见了", Toast.LENGTH_SHORT).show();
     }
 }

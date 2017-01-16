@@ -11,7 +11,9 @@ import com.datang.datangcarmanager.model.VehicleList;
 import com.datang.datangcarmanager.model.request.EnterpriseCarParams;
 import com.datang.datangcarmanager.model.request.PostRequest;
 import com.datang.datangcarmanager.view.IEnterpriseCarListView;
+import com.google.gson.Gson;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import rx.android.schedulers.AndroidSchedulers;
