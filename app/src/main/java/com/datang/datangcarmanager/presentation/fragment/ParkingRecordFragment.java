@@ -20,6 +20,7 @@ import com.amap.api.maps2d.AMap;
 import com.amap.api.maps2d.AMapException;
 import com.amap.api.maps2d.CameraUpdate;
 import com.amap.api.maps2d.CameraUpdateFactory;
+import com.amap.api.maps2d.CoordinateConverter;
 import com.amap.api.maps2d.MapView;
 import com.amap.api.maps2d.Projection;
 import com.amap.api.maps2d.model.BitmapDescriptorFactory;
@@ -279,11 +280,11 @@ public class ParkingRecordFragment extends Fragment implements IParkingRecordVie
     }
 
     private void doRequest() {
-        mPresenter.getParkingRecordsInfo(this,
-                mCarInfo.getObjId(),
-                formatter.format(selectedDate),
-                mCarInfo.getLpno());
         if (nowPage == SingleCarInfoActivity.VIEW_PARKING_RECORD) {
+            mPresenter.getParkingRecordsInfo(this,
+                    mCarInfo.getObjId(),
+                    formatter.format(selectedDate),
+                    mCarInfo.getLpno());
             if (mDialog == null || !mDialog.isShowing()) {
                 mDialog = new SweetAlertDialog(this.getActivity(), SweetAlertDialog.PROGRESS_TYPE);
                 mDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
@@ -332,13 +333,20 @@ public class ParkingRecordFragment extends Fragment implements IParkingRecordVie
             MyToast.showToastShort("此时间段内没有停车记录。");
         } else {
             records = responce.getDetail().getDataList();
-            geocodeSearchNum = 0;
-            for(ParkingRecordList.ParkingRecordBean record : records) {
-                RegeocodeQuery query = new RegeocodeQuery(new LatLonPoint(record.getLatitude(), record.getLongitude()),
-                        200, GeocodeSearch.AMAP);
-                geocodeSearch.getFromLocationAsyn(query);
-                Log.i("Start", "Get ++++++++++++++++++++++++++++++++");
+            Log.i("Parking", "" + records.size());
+            CoordinateConverter converter  = new CoordinateConverter();
+            converter.from(CoordinateConverter.CoordType.GPS);
+            for (ParkingRecordList.ParkingRecordBean record : records) {
+                LatLng latLng = new LatLng(record.getLatitude(), record.getLongitude());
+                converter.coord(latLng);
+                LatLng newLatLng = converter.convert();
+                record.setLatitude(newLatLng.latitude);
+                record.setLongitude(newLatLng.longitude);
             }
+            geocodeSearchNum = 0;
+            RegeocodeQuery query = new RegeocodeQuery(new LatLonPoint(records.get(0).getLatitude(), records.get(0).getLongitude()),
+                    200, GeocodeSearch.AMAP);
+            geocodeSearch.getFromLocationAsyn(query);
         }
     }
 
@@ -394,7 +402,7 @@ public class ParkingRecordFragment extends Fragment implements IParkingRecordVie
             ));
             aMap.moveCamera(update);
 
-            markerOptionsListInView.addAll(markerOptionsListShouldShow);
+            markerOptionsListInView.clear();
             while (markerOptionsListShouldShow.size() != markerOptionsListInView.size()) {
                 Projection projection = aMap.getProjection();
                 Point point = null;
@@ -465,13 +473,18 @@ public class ParkingRecordFragment extends Fragment implements IParkingRecordVie
         if (i == 1000) {
             geocodeSearchNum++;
             RegeocodeAddress address = regeocodeResult.getRegeocodeAddress();
-            String location = address.getProvince() + address.getCity() + address.getDistrict();
+            String location = address.getProvince() + address.getCity() + address.getDistrict() + address.getTownship();
             records.get(geocodeSearchNum - 1).setEndLocation(location);
             if (geocodeSearchNum == records.size()) {
                 if (mDialog != null && mDialog.isShowing()) {
                     mDialog.dismiss();
                 }
                 initData();
+            } else {
+                RegeocodeQuery query = new RegeocodeQuery(new LatLonPoint(records.get(geocodeSearchNum).getLatitude(),
+                        records.get(geocodeSearchNum).getLongitude()),
+                        200, GeocodeSearch.AMAP);
+                geocodeSearch.getFromLocationAsyn(query);
             }
         }
     }

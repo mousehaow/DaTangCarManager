@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.amap.api.maps2d.AMap;
 import com.amap.api.maps2d.CameraUpdate;
 import com.amap.api.maps2d.CameraUpdateFactory;
+import com.amap.api.maps2d.CoordinateConverter;
 import com.amap.api.maps2d.MapView;
 import com.amap.api.maps2d.Projection;
 import com.amap.api.maps2d.model.BitmapDescriptorFactory;
@@ -187,6 +188,15 @@ public class EnterpriseCarActivity extends BaseActivity implements IEnterpriseCa
     @Override
     public void getAllCarInfoSuccess(Responce<VehicleList> responce) {
         carList = responce.getDetail().getVehicleList();
+        CoordinateConverter converter  = new CoordinateConverter();
+        converter.from(CoordinateConverter.CoordType.GPS);
+        for (Vehicle vehicle : carList) {
+            LatLng latLng = new LatLng(vehicle.getLatitude(), vehicle.getLongitude());
+            converter.coord(latLng);
+            LatLng newLatLng = converter.convert();
+            vehicle.setLatitude(newLatLng.latitude);
+            vehicle.setLongitude(newLatLng.longitude);
+        }
         pDialog.dismissWithAnimation();
         initData();
     }

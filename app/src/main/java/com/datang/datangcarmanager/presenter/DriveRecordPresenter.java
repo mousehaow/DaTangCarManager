@@ -1,6 +1,8 @@
 package com.datang.datangcarmanager.presenter;
 
 import android.content.Context;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.datang.datangcarmanager.api.ApiFactory;
 import com.datang.datangcarmanager.api.CarApi;
@@ -49,15 +51,15 @@ public class DriveRecordPresenter {
                 .subscribe(Responce -> {
                     showInfo(iDriveRecordView, Responce, mContext);
                 }, this::loadError);
-
     }
 
     private void showInfo(IDriveRecordView view, Responce responce, Context context) {
+        Log.i("DriveRecord", "" + responce);
         view.getDriveRecordsSuccess(responce);
     }
 
     private void loadError(Throwable throwable) {
         throwable.printStackTrace();
-        //Toast.makeText(mContext, "网络不见了", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mContext, "网络不见了", Toast.LENGTH_SHORT).show();
     }
 }

@@ -13,6 +13,8 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.amap.api.maps2d.CoordinateConverter;
+import com.amap.api.maps2d.model.LatLng;
 import com.chanven.lib.cptr.PtrClassicFrameLayout;
 import com.chanven.lib.cptr.PtrDefaultHandler;
 import com.chanven.lib.cptr.PtrFrameLayout;
@@ -201,6 +203,15 @@ public class EnterpriseCarListActivity extends BaseActivity implements IEnterpri
         pDialog.dismiss();
         allDepartmentCarList.clear();
         allDepartmentCarList.addAll(responce.getDetail().getVehicleList());
+        CoordinateConverter converter  = new CoordinateConverter();
+        converter.from(CoordinateConverter.CoordType.GPS);
+        for (Vehicle vehicle : allDepartmentCarList) {
+            LatLng latLng = new LatLng(vehicle.getLatitude(), vehicle.getLongitude());
+            converter.coord(latLng);
+            LatLng newLatLng = converter.convert();
+            vehicle.setLatitude(newLatLng.latitude);
+            vehicle.setLongitude(newLatLng.longitude);
+        }
         showDepartmentCarList.clear();
         showDepartmentCarList.addAll(allDepartmentCarList);
 

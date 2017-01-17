@@ -3,6 +3,8 @@ package com.datang.datangcarmanager.presentation.fragment;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -18,6 +20,12 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.amap.api.services.core.LatLonPoint;
+import com.amap.api.services.geocoder.GeocodeResult;
+import com.amap.api.services.geocoder.GeocodeSearch;
+import com.amap.api.services.geocoder.RegeocodeAddress;
+import com.amap.api.services.geocoder.RegeocodeQuery;
+import com.amap.api.services.geocoder.RegeocodeResult;
 import com.chanven.lib.cptr.PtrClassicFrameLayout;
 import com.chanven.lib.cptr.PtrDefaultHandler;
 import com.chanven.lib.cptr.PtrFrameLayout;
@@ -25,15 +33,21 @@ import com.chanven.lib.cptr.loadmore.OnLoadMoreListener;
 import com.chanven.lib.cptr.recyclerview.RecyclerAdapterWithHF;
 import com.datang.datangcarmanager.R;
 import com.datang.datangcarmanager.model.CarInfo;
+import com.datang.datangcarmanager.model.CarTrack;
 import com.datang.datangcarmanager.model.DriveRecord;
+import com.datang.datangcarmanager.model.ParkingRecordList;
 import com.datang.datangcarmanager.model.Responce;
 import com.datang.datangcarmanager.model.Vehicle;
+import com.datang.datangcarmanager.presentation.activity.CarTrackActivity;
+import com.datang.datangcarmanager.presentation.activity.EnterpriseCarListActivity;
 import com.datang.datangcarmanager.presentation.activity.SingleCarInfoActivity;
+import com.datang.datangcarmanager.presentation.activity.SingleCarMapActivity;
 import com.datang.datangcarmanager.presentation.adapter.DriveRecordListAdapter;
 import com.datang.datangcarmanager.presentation.view.DefultItemDecoration;
 import com.datang.datangcarmanager.presenter.DriveRecordPresenter;
 import com.datang.datangcarmanager.utils.MyToast;
 import com.datang.datangcarmanager.view.IDriveRecordView;
+import com.google.gson.Gson;
 import com.roomorama.caldroid.CaldroidFragment;
 import com.roomorama.caldroid.CaldroidListener;
 
@@ -41,6 +55,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -48,9 +63,10 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cn.pedant.SweetAlert.SweetAlertDialog;
 
 
-public class DriveRecordFragment extends Fragment implements TimePickerDialog.OnTimeSetListener, IDriveRecordView {
+public class DriveRecordFragment extends Fragment implements TimePickerDialog.OnTimeSetListener, IDriveRecordView, GeocodeSearch.OnGeocodeSearchListener {
 
     public static final String DIALOG_TAG = "CALDROID_DIALOG_DriveRecordFragment";
 
@@ -99,7 +115,13 @@ public class DriveRecordFragment extends Fragment implements TimePickerDialog.On
 
     private boolean isLeftTimePicker;
 
+    private SweetAlertDialog mDialog;
+
     private DriveRecordPresenter mPresenter = null;
+    private int nowPage;
+
+    private GeocodeSearch geocodeSearch;
+    private int geocodeSearchNum = 0;
 
     public DriveRecordFragment(Context context, Vehicle carInfo) {
         mCarInfo = carInfo;
@@ -126,8 +148,10 @@ public class DriveRecordFragment extends Fragment implements TimePickerDialog.On
     }
 
     public void pageChanged(int position) {
+        nowPage = position;
+        Log.i("Parking", "" + nowPage);
         if (position == SingleCarInfoActivity.VIEW_DRIVE_RECORD) {
-            if (mDriveRecords.size() == 0) {
+            if (mDriveRecords.size() == 0 && mPresenter != null) {
                 driveRecordDataRequest();
                 mDriveRecordRecyclerViewFrame.autoRefresh(true);
             }
@@ -160,6 +184,8 @@ public class DriveRecordFragment extends Fragment implements TimePickerDialog.On
         calendar = new GregorianCalendar();
         selectedDate = new Date();
         mDriveRecordDateShowTv.setText(formatter.format(selectedDate));
+        geocodeSearch = new GeocodeSearch(this.getActivity());
+        geocodeSearch.setOnGeocodeSearchListener(this);
         matchPickBtn();
         if (caldroidFragment == null) {
             caldroidFragment = new CaldroidFragment();
@@ -178,7 +204,14 @@ public class DriveRecordFragment extends Fragment implements TimePickerDialog.On
         mAdapterWithHF.setOnItemClickListener(new RecyclerAdapterWithHF.OnItemClickListener() {
             @Override
             public void onItemClick(RecyclerAdapterWithHF adapter, RecyclerView.ViewHolder vh, int position) {
-
+                Gson gson = new Gson();
+                String car = gson.toJson(mCarInfo);
+                String record = gson.toJson(mDriveRecords.get(position));
+                Intent intent = new Intent(getActivity(), CarTrackActivity.class);
+                intent.putExtra(CarTrackActivity.TAG, car);
+                intent.putExtra(CarTrackActivity.RECORD_TAG, record);
+                startActivity(intent);
+                getActivity().overridePendingTransition(R.anim.in_from_right, android.R.anim.fade_out);
             }
         });
         mDriveRecordRecyclerView.setLayoutManager(
@@ -208,11 +241,20 @@ public class DriveRecordFragment extends Fragment implements TimePickerDialog.On
     }
 
     private void driveRecordDataRequest() {
-        String date = formatter.format(selectedDate);
-        String beginTime = date + " " + mDriveRecordLowTime.getText().toString() + ":00";
-        String endTime = date + " " + mDriveRecordHeightTime.getText().toString() + ":59";
-        Log.i("RecordFragment", beginTime + "  " + endTime);
-        mPresenter.getDriveRecords(this, mCarInfo.getObjId(), beginTime, endTime);
+        if (nowPage == SingleCarInfoActivity.VIEW_DRIVE_RECORD) {
+            String date = formatter.format(selectedDate);
+            String beginTime = date + " " + mDriveRecordLowTime.getText().toString() + ":00";
+            String endTime = date + " " + mDriveRecordHeightTime.getText().toString() + ":59";
+            mPresenter.getDriveRecords(this, mCarInfo.getObjId(), beginTime, endTime);
+            mDriveRecordRecyclerViewFrame.autoRefresh(true);
+            if (mDialog == null || !mDialog.isShowing()) {
+                mDialog = new SweetAlertDialog(this.getActivity(), SweetAlertDialog.PROGRESS_TYPE);
+                mDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+                mDialog.setTitleText("正在加载中...");
+                mDialog.setCancelable(false);
+                mDialog.show();
+            }
+        }
     }
 
 
@@ -317,7 +359,6 @@ public class DriveRecordFragment extends Fragment implements TimePickerDialog.On
 
     private void matchPickBtn() {
         driveRecordDataRequest();
-        mDriveRecordRecyclerViewFrame.autoRefresh(true);
         calendar.setTime(selectedDate);
         calendar.add(calendar.DATE, -1);
         mDriveRecordLeftDaypickBtn.setText(calendar.getTime().getDate() + "日");
@@ -407,14 +448,72 @@ public class DriveRecordFragment extends Fragment implements TimePickerDialog.On
     @Override
     public void getDriveRecordsSuccess(Responce<DriveRecord> responce) {
         mDriveRecords.clear();
-        mDriveRecords.addAll(responce.getDetail().getSegList());
-        mRecordListAdapter.notifyDataSetChanged();
-        mDriveRecordRecyclerViewFrame.refreshComplete();
-        mDriveRecordDayOilConsumption.setText(responce.getDetail().getFuelCost());
-        mDriveRecordMileage.setText(responce.getDetail().getTotalMileAge());
-        mDriveRecordAverageOilConsumption.setText(responce.getDetail().getAverageFuel());
         if (responce.getDetail().getSegList().size() == 0) {
-            MyToast.showToastShort("此事件段内没有行驶记录。");
+            MyToast.showToastShort("此时间段内没有行驶记录。");
+            if (mDialog != null && mDialog.isShowing()) {
+                mDialog.dismiss();
+            }
+            mRecordListAdapter.notifyDataSetChanged();
+            mDriveRecordRecyclerViewFrame.refreshComplete();
+        } else {
+            mDriveRecords.addAll(responce.getDetail().getSegList());
+            Collections.reverse(mDriveRecords);
+            geocodeSearchNum = 0;
+            RegeocodeQuery query = new RegeocodeQuery(new LatLonPoint(mDriveRecords.get(0).getStartLat(),
+                    mDriveRecords.get(0).getStartLng()),
+                    20, GeocodeSearch.AMAP);
+            geocodeSearch.getFromLocationAsyn(query);
+            mDriveRecordDayOilConsumption.setText(responce.getDetail().getFuelCost());
+            mDriveRecordMileage.setText(responce.getDetail().getTotalMileAge());
+            mDriveRecordAverageOilConsumption.setText(responce.getDetail().getAverageFuel());
+            geocodeSearchNum = 0;
         }
+    }
+
+    @Override
+    public void onRegeocodeSearched(RegeocodeResult regeocodeResult, int i) {
+        if (i == 1000) {
+            RegeocodeAddress address = regeocodeResult.getRegeocodeAddress();
+            if (geocodeSearchNum >= mDriveRecords.size() * 2) {
+                return;
+            } else {
+                if (geocodeSearchNum % 2 == 0) {
+                    String location = address.getProvince() + address.getCity() + address.getDistrict() +
+                            address.getTownship() + address.getNeighborhood();
+                    mDriveRecords.get(geocodeSearchNum / 2).setStartLocation(location);
+                } else {
+                    String location = address.getProvince() + address.getCity() + address.getDistrict() +
+                            address.getTownship() + address.getNeighborhood();
+                    mDriveRecords.get(geocodeSearchNum / 2).setEndLocation(location);
+                }
+            }
+            geocodeSearchNum++;
+            if (geocodeSearchNum == mDriveRecords.size() * 2) {
+                if (mDialog != null && mDialog.isShowing()) {
+                    mDialog.dismiss();
+                }
+                mRecordListAdapter.notifyDataSetChanged();
+                mDriveRecordRecyclerViewFrame.refreshComplete();
+            } else {
+                if (geocodeSearchNum % 2 == 1) {
+                    RegeocodeQuery query = new RegeocodeQuery(new LatLonPoint(mDriveRecords.get(geocodeSearchNum / 2).getEndLat(),
+                            mDriveRecords.get(geocodeSearchNum / 2).getEndLng()),
+                            20, GeocodeSearch.AMAP);
+                    geocodeSearch.getFromLocationAsyn(query);
+                    Log.i("TIME", "end time " + mDriveRecords.get(geocodeSearchNum / 2).getEndTime());
+                } else {
+                    RegeocodeQuery query = new RegeocodeQuery(new LatLonPoint(mDriveRecords.get(geocodeSearchNum / 2).getStartLat(),
+                            mDriveRecords.get(geocodeSearchNum / 2).getStartLng()),
+                            20, GeocodeSearch.AMAP);
+                    geocodeSearch.getFromLocationAsyn(query);
+                    Log.i("TIME", "start time " + mDriveRecords.get(geocodeSearchNum / 2).getStartTime());
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onGeocodeSearched(GeocodeResult geocodeResult, int i) {
+
     }
 }

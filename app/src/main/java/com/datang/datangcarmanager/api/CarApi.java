@@ -9,6 +9,7 @@ import com.datang.datangcarmanager.model.Department;
 import com.datang.datangcarmanager.model.DriveRecord;
 import com.datang.datangcarmanager.model.ParkingRecordList;
 import com.datang.datangcarmanager.model.RealTimeDetect;
+import com.datang.datangcarmanager.model.RecordTrack;
 import com.datang.datangcarmanager.model.Responce;
 import com.datang.datangcarmanager.model.SearchCarInfo;
 import com.datang.datangcarmanager.model.VehicleList;
@@ -40,11 +41,14 @@ public interface CarApi {
     @POST("saasapi/saasapi")
     Observable<Responce<RealTimeDetect>> getCarStateInfo(@Body PostRequest request);
 
-    @POST("saasapi/saasapi")
+    @POST("TinyOBDClient/service/BusinessService")
     Observable<Responce<DriveRecord>> getDriveRecordsInfo(@Body PostRequest request);
 
     @POST("TinyOBDClient/service/BusinessService")
     Observable<Responce<ParkingRecordList>> getParkingRecordsInfo(@Body PostRequest request);
+
+    @POST("TinyOBDClient/service/BusinessService")
+    Observable<Responce<RecordTrack>> getRecordTrackInfo(@Body PostRequest request);
 
     @POST("saasapi/saasapi")
     Observable<Responce<CarTrack>> getCarTrackInfo(@Body PostRequest request);

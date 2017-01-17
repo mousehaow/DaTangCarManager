@@ -67,7 +67,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
         android:layout_weight="1.2">
         <TextView
             android:id="@+id/drive_record_item_distance"

@@ -60,7 +60,6 @@ public class ParkingRecordPresenter {
 
     private void showInfo(IParkingRecordView view, Responce<ParkingRecordList> responce, Context context) {
         Gson gson = new Gson();
-        Log.i("Tag++++++", gson.toJson(responce));
         view.getParkingRecordsInfoSuccess(responce);
     }
 
