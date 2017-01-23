@@ -85,6 +85,7 @@ public class SingleCarInfoActivity extends BaseActivity implements ViewPager.OnP
      */
     private void initTab() {
         mVpMain.setOffscreenPageLimit(VIEW_SIZE);
+        mVpMain.setNoFocus(true);
         FragmentAdapter adapter = new FragmentAdapter(getSupportFragmentManager());
         mVpMain.setAdapter(new FragmentAdapter(getSupportFragmentManager()));
         adapter.notifyDataSetChanged();

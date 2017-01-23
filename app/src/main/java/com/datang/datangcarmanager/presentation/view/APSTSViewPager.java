@@ -34,5 +34,13 @@ public class APSTSViewPager extends ViewPager {
     public void setNoFocus(boolean b){
         mNoFocus = b;
     }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent arg0) {
+        if (mNoFocus) {
+            return false;
+        }
+        return super.onTouchEvent(arg0);
+    }
 }
 

@@ -67,7 +67,7 @@ public class CarTrack {
         private String posTime;
         private double longitude;
         private double latitude;
-        private int posSpeed;
+        private double posSpeed;
         private int posDirection;
         private int deviceStatus;
         private String gid;
@@ -76,10 +76,23 @@ public class CarTrack {
         private String driverName;
         private String driverTelephone;
         private String lastPosTime;
-        private double lastLongitude;
-        private double lastLatitude;
-        private int lastPosSpeed;
-        private int lastPosDirection;
+//        private double lastLongitude;
+//        private double lastLatitude;
+//        private double lastPosSpeed;
+//        private int lastPosDirection;
+
+
+        private String lastLatitude;
+        private String lastLongitude;
+        private String lastPosSpeed;
+        private String lastPosDirection;
+//
+//        private String posDirection;
+//        private String latitude;
+//        private String longitude;
+//        private String posSpeed;
+
+
 
         public int getObjType() {
             return objType;
@@ -209,11 +222,11 @@ public class CarTrack {
             this.latitude = latitude;
         }
 
-        public int getPosSpeed() {
+        public double getPosSpeed() {
             return posSpeed;
         }
 
-        public void setPosSpeed(int posSpeed) {
+        public void setPosSpeed(double posSpeed) {
             this.posSpeed = posSpeed;
         }
 
@@ -281,36 +294,7 @@ public class CarTrack {
             this.lastPosTime = lastPosTime;
         }
 
-        public double getLastLongitude() {
-            return lastLongitude;
-        }
 
-        public void setLastLongitude(double lastLongitude) {
-            this.lastLongitude = lastLongitude;
-        }
 
-        public double getLastLatitude() {
-            return lastLatitude;
-        }
-
-        public void setLastLatitude(double lastLatitude) {
-            this.lastLatitude = lastLatitude;
-        }
-
-        public int getLastPosSpeed() {
-            return lastPosSpeed;
-        }
-
-        public void setLastPosSpeed(int lastPosSpeed) {
-            this.lastPosSpeed = lastPosSpeed;
-        }
-
-        public int getLastPosDirection() {
-            return lastPosDirection;
-        }
-
-        public void setLastPosDirection(int lastPosDirection) {
-            this.lastPosDirection = lastPosDirection;
-        }
     }
 }

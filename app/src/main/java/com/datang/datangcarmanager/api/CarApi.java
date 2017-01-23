@@ -50,7 +50,7 @@ public interface CarApi {
     @POST("TinyOBDClient/service/BusinessService")
     Observable<Responce<RecordTrack>> getRecordTrackInfo(@Body PostRequest request);
 
-    @POST("saasapi/saasapi")
+    @POST("TinyOBDClient/service/BusinessService")
     Observable<Responce<CarTrack>> getCarTrackInfo(@Body PostRequest request);
 
     @POST("saasapi/saasapi")

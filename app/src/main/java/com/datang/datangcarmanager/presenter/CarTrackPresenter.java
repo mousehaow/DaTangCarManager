@@ -1,6 +1,7 @@
 package com.datang.datangcarmanager.presenter;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.datang.datangcarmanager.api.ApiFactory;
 import com.datang.datangcarmanager.api.CarApi;
@@ -8,6 +9,7 @@ import com.datang.datangcarmanager.model.Responce;
 import com.datang.datangcarmanager.model.request.CarTrackParams;
 import com.datang.datangcarmanager.model.request.PostRequest;
 import com.datang.datangcarmanager.view.ICarTrackView;
+import com.google.gson.Gson;
 
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;

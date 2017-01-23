@@ -73,5 +73,4 @@ public class Responce<T> {
         this.detail = detail;
     }
 
-
 }
